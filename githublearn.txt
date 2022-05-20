@@ -1,0 +1,50 @@
+github教學(未下載檔案時)
+初始化 git init
+連結電腦 git clone +網址
+00
+下載後至檔案夾開啟新的git
+
+上傳檔案(add後要有空白鍵) git add .
+註記這次上傳更改了甚麼 git commit -m "  "
+
+連結到新專案 git remote add origin 網址
+將整份資料上傳到上面 git push -u origin master
+
+教學影片:
+初學:https://www.youtube.com/watch?v=Zd5jSDRjWfA&list=PLRpVpuPZFHyyYnt-uzZb-7igZ4Y9Mx5Dm&index=2
+
+
+
+#遇到Your branch is up-to-date with 'origin/master'
+解決方法:
+
+需要新建一個分支
+$ git branch newbranch 
+
+檢查分支是否創建成功
+$ git branch 
+
+然後切換到你的新分支
+$ git checkout newbranch
+
+*如果不放心，還可以 $ git branch確認下
+
+將你的改動提交到新分支上
+
+$ git add . 
+$ git commit -m "new branch"
+
+然後git status檢查是否成功
+
+然後切換到主分支
+
+$ git checkout master 
+然後將新分支提交的改動合併到主分支上
+
+$ git merge newbranch  
+然後就可以push代碼了
+
+$ git push -u origin master
+最後還可以刪除這個分支
+
+$ git branch -D newbranch

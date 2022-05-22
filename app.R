@@ -18,6 +18,8 @@ library(stringr)
 library(div)
 library(DT)
 library(xml2)
+library(quantmod)
+library(PerformanceAnalytics)
 ################################################################################
 
 ###外部 function
@@ -1072,11 +1074,11 @@ TWII_MA_p<-function(stock_data_TWII_fun){
 
 
 #美股大盤
-stock_data_DJI<-function(snum,fromdate,todate){
+stock_data_SOX<-function(snum,fromdate,todate){
   ###################################################################
   ##原矩陣
   #from為起始時間 #Sys.Date()
-  sdata <- getSymbols(paste0('^',"DJI"),auto.assign=FALSE,src="yahoo",from=fromdate,to=as.Date(todate)+1)
+  sdata <- getSymbols(paste0('^',"SOX"),auto.assign=FALSE,src="yahoo",from=fromdate,to=as.Date(todate)+1)
   
   #將時間序列轉為變數
   sdata_date<-index(sdata)
@@ -1087,7 +1089,7 @@ stock_data_DJI<-function(snum,fromdate,todate){
   #################################################################
   ##計算用矩陣
   #往前算90天
-  s_c_data <- getSymbols(paste0('^',"DJI"),auto.assign=FALSE,src="yahoo",from=as.Date(fromdate)-90,to=todate)
+  s_c_data <- getSymbols(paste0('^',"SOX"),auto.assign=FALSE,src="yahoo",from=as.Date(fromdate)-90,to=todate)
   
   #將時間序列轉為變數
   sdata_c_date<-index(s_c_data)
@@ -1096,7 +1098,7 @@ stock_data_DJI<-function(snum,fromdate,todate){
   s_c_nrow<-nrow(s_c_data)
   ################################################################
   #回傳股票代碼、起始日期、
-  return(list(snum='DJI',fromdate,todate,
+  return(list(snum='SOX',fromdate,todate,
               sdata,sd_nrow,
               s_c_data,s_c_nrow)
   )
@@ -1104,10 +1106,10 @@ stock_data_DJI<-function(snum,fromdate,todate){
 
 ##股票的介面圖 
 #美股大盤+布林
-DJI_BB_p<-function(stock_data_DJI_fun){
+SOX_BB_p<-function(stock_data_SOX_fun){
   
   #將資訊輸入
-  sdata_f<-stock_data_DJI_fun
+  sdata_f<-stock_data_SOX_fun
   snum<-sdata_f[[1]]
   fromdate<-sdata_f[[2]]
   todate<-sdata_f[[3]]
@@ -1177,10 +1179,10 @@ DJI_BB_p<-function(stock_data_DJI_fun){
 }
 
 #美股大盤+移動平均線
-DJI_MA_p<-function(stock_data_DJI_fun){
+SOX_MA_p<-function(stock_data_SOX_fun){
   
   #將資訊輸入
-  sdata_f<-stock_data_DJI_fun
+  sdata_f<-stock_data_SOX_fun
   snum<-sdata_f[[1]]
   fromdate<-sdata_f[[2]]
   todate<-sdata_f[[3]]
@@ -1347,6 +1349,39 @@ box_p<-function(data){
   
   multiplot(O,H,L,C,V,A, cols=3)  
   
+}
+
+#回測
+backtesting=function(snum,startDT,endDT,in_strategy,out_strategy){
+  #
+  test<-getSymbols(snum,auto.assign=FALSE,from=startDT,to=endDT)
+  close <- Cl(test)
+  ma5 <- SMA(close, 5)
+  ma10 <- SMA(close, 10)
+  ma20 <- SMA(close, 20)
+  
+  #進出場策略選擇
+  #做多訊號
+  #布林值轉數值。等於1有符合，等於0沒有
+  long_insite<-0
+  long_outsite<-0
+  
+  switch(in_strategy,
+         "ma5>ma10&ma10>ma20"={long_insite<-as.numeric(ma5>ma10&ma10>ma20)}#進場訊號
+  )
+  switch(out_strategy,
+         "ma5<ma10"={long_outsite<-as.numeric(ma5<ma10)}#出場訊號
+  )
+  
+  #
+  roc <- ROC(type="discrete",close)#用離散方式計算每日收益
+  ret <- roc * long_insite  #當天有無報酬率
+  test=cbind(test,ma5,ma10,ma20,long_insite,long_outsite,ret)
+  
+  #
+  colnames(test)=c("開盤價","最高價","最低價","收盤價","成交量","調整價","五日移動平均線","十日移動平均線","二十日移動平均線","進場訊號","出場訊號","ROI")
+  backtest_p <- charts.PerformanceSummary(ret) #1.累計報酬率 2.單日報酬率 3.下跌圖
+  return(list(test,backtest_p))
 }
 
 #上架後使中文不顯示亂碼
@@ -1572,13 +1607,15 @@ ui <- fluidPage(
                      #inline = FALSE)
             ),
             tabPanel("台/美股票大盤",
+                     h4("台股大盤產業中以半導體占比最多，進而延伸至美股中屬於半導體產業指數，就是費城半導體指數(SOX)，因此兩個的走勢相近。詳細資訊可參考", style = "color:white;"),
+                     p(tags$li(tags$b(tags$a(href="https://www.herishare.com/taiex-trend-relationship/", "此網址。", class="externallink")),
                      #選擇大盤指標
                      selectInput("index2","選擇台股大盤指標:",
                                  c("移動平均線"= "TWII_MA","布林通道"="TWII_BB"),
                                  selected = "移動平均線"
                      ),
                      selectInput("index3","選擇美股大盤指標:",
-                                 c("移動平均線"= "DJI_MA","布林通道"="DJI_BB"),
+                                 c("移動平均線"= "SOX_MA","布林通道"="SOX_BB"),
                                  selected = "移動平均線"
                      ),
                      box(
@@ -1587,7 +1624,7 @@ ui <- fluidPage(
                      ),
                      box(
                        title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader(plotOutput("DJIplot"), type="html", loader="pacman")
+                       withLoader(plotOutput("SOXplot"), type="html", loader="pacman")
                      )
             ),
             tabPanel("個股股價行情表",
@@ -1656,6 +1693,20 @@ ui <- fluidPage(
     tabPanel(
       "回測分析",icon = icon("trello"),
       mainPanel(
+        h4("回測的用意是擬定一組策略，然後帶回到以前的日子中，看此策略的報酬是否不錯。
+           所以可以擬訂很多組策略來自行觀察哪組最佳。而我們這邊的策略是，當五日線大於十日線、
+           十日線大於二十日線時作買進，當五日線一跌破二十日線時作賣出。
+           可以先用我們設定的回測去研究此方法對哪支股票的報酬率最好。", style = "color:white;"),
+        h5("上圖:累計收益、中圖:日收益、下圖:下跌圖(將下跌成分獨立繪出，有助於我們分析虧損狀況和研究彌補措施)", style = "color:white;"),
+        br(),
+        box( 
+          title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+          withLoader(plotOutput("cumulative_return",height = "820px",width="500px"), type="html", loader="pacman")
+        ),
+        br(),
+        downloadButton("backtesting", "下載回測分析excel"),
+        br(),
+        br()
       )
     ),
     #第五頁
@@ -1831,8 +1882,8 @@ server = function(input,output,session) {
   react_sdata_TWII<-reactive({
     stock_data_TWII(react_stocknum_str(),input$date[1],input$date[2])
   })
-  react_sdata_DJI<-reactive({
-    stock_data_DJI(react_stocknum_str(),input$date[1],input$date[2])
+  react_sdata_SOX<-reactive({
+    stock_data_SOX(react_stocknum_str(),input$date[1],input$date[2])
   })
   
   ########validate###########
@@ -2018,18 +2069,18 @@ server = function(input,output,session) {
   
   ##美股大盤
   ##根據選擇作不同指標圖反應式
-  react_DJI_plot <- reactive({
+  react_SOX_plot <- reactive({
     switch(input$index3,
-           "DJI_MA" = DJI_MA_p(react_sdata_DJI()),
-           "DJI_BB" = DJI_BB_p(react_sdata_DJI())
+           "SOX_MA" = SOX_MA_p(react_sdata_SOX()),
+           "SOX_BB" = SOX_BB_p(react_sdata_SOX())
     )
   })
   
   ##匯出指標圖
-  output$DJIplot = renderPlot({
+  output$SOXplot = renderPlot({
     #validate dateorder、abbr
     react_valid_dateorder_abbr()
-    react_DJI_plot()
+    react_SOX_plot()
   })
   
   ##籌碼面
@@ -2058,8 +2109,50 @@ server = function(input,output,session) {
     box_p(sdata)
   })
   
+  ##回測
+  output$cumulative_return = renderPlot({
+    #隨時更新資料
+    react_fun$firstdate<-input$date[1]
+    react_fun$todate<-input$date[2]
+    #validate dateorder_Babbr
+    react_valid_dateorder_abbr()
+    #
+    react_fun$index_name<-input$index1
+    #
+    backtesting(react_stocknum_str(),react_fun$firstdate,react_fun$todate,
+                in_strategy="ma5>ma10&ma10>ma20",out_strategy="ma5<ma10")
+  })
+  output$cr_table = renderPrint({
+    #validate dateorder_Babbr
+    react_valid_dateorder_abbr()
+    #
+    react_fun$firstdate<-input$date[1]
+    react_fun$todate<-input$date[2]
+    #
+    backtesting(react_stocknum_str(),react_fun$firstdate,react_fun$todate,
+                in_strategy="ma5>ma10&ma10>ma20",out_strategy="ma5<ma10")[[1]]
+  })
   
-} 
+  #下載回測excel
+  output$backtesting <- downloadHandler(
+    filename = function() {
+      paste("data-", Sys.Date(),".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(backtesting(react_stocknum_str(),react_fun$firstdate,react_fun$todate,
+                            in_strategy="ma5>ma10&ma10>ma20",out_strategy="ma5<ma10")[[1]], file,
+                row.names=TRUE
+                
+      )
+      
+    }
+  )
+  
+  
+  
+}
+
+
 
 
 ###執行

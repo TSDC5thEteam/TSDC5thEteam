@@ -1670,12 +1670,11 @@ ui <- fluidPage(
       "回測分析",icon = icon("trello"),
       mainPanel(
         br(),
-        h5("回測的用意是擬定一組策略，然後帶回到以前的日子中，
-           看此策略的報酬是否不錯。",style = "color:white;"),
-        h5("所以可以擬訂很多組策略來自行觀察哪組最佳。",style = "color:white;"),
-        h5("而我們這邊的策略是，當五日線大於十日線、十日線大於二十日線時作買進，當五日線一跌破二十日線時作賣出。",style = "color:white;"),
-        h5("可以先用我們設定的回測去研究此方法對哪支股票的報酬率最好。", style = "color:white;"),
-        h5("上圖:累計收益、中圖:日收益、下圖:下跌圖(將下跌成分獨立繪出，有助於我們分析虧損狀況和研究彌補措施)", style = "color:white;"),
+        h5("回測(Backtesting)，基於歷史股價以測試並重塑策略的過程，用以檢驗策略的過往績效。進行回測時，可擬定多組策略，並自行觀察何種策略的執行效果最佳。",style = "color:white;"),
+        p("此網站所擬定的策略為，",span("當移動平均五日線大於移動平均十日線、移動平均十日線大於移動平均二十日線時，作買進。當移動平均五日線跌破移動平均二十日線時，作賣出。", style = "color:orange")),
+        h5("各位小韭菜們可以先行使用此網站所擬定的策略，研究此方法對哪支股票的報酬率最好。且可下載Excel檔，進一步了解進出場時間點及報酬率。", style = "color:white;"),
+        h5("上圖:累計收益、中圖:日收益、下圖:下跌圖", style = "color:white;"),
+        h5("(註:將下跌成分獨立繪出，有助於我們分析虧損狀況及研究彌補措施)", style = "color:white;"), 
         br(),
         box( 
           title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,

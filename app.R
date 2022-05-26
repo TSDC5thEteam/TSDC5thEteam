@@ -694,7 +694,7 @@ Arbr_p<-function(data,whether_riskline5,risk_line,date_interval_set){
   arbr_p<-ggplot(data=afterc_sdata,aes(x =sdata_c_date))+
     geom_line(aes(y=ARindex,col="AR指標"),na.rm=T)+
     geom_line(aes(y=BRindex,col="BR指標"),na.rm=T)+
-    labs(title = "AR&BR 人氣指標&收盤指標",x="",y="ARBR(%)",color="")+
+    labs(title = "AR人氣指標&BR收盤指標",x="",y="ARBR(%)",color="")+
     scale_x_date(date_breaks = date_interval_set, date_labels=c("%m/%d"))+
     theme(axis.text.y = element_text(margin = margin(r = -20)))+
     scale_color_manual(values = c("AR指標"="blue","BR指標"="orange"))+
@@ -1408,222 +1408,223 @@ ui <- fluidPage(
     "股票查詢",
     # 第一頁
     tabPanel(
-      "技術面",icon = icon("chart-line"), 
+      "技術面",icon = icon("chart-line"),
+      
       sidebarLayout(
-        sidebarPanel(
-          
-          #helpText("請輸入台股編號4或6碼"),
-          #拉頁找代碼
-          #selectInput(
-          #"canpabbnm",
-          #label = "",
-          #choices =list("台股編號"=list[,1]),
-          #selected = "2603.TW"
-          #),
-          h3("選擇股票"),
-          pickerInput(
-            inputId = "canpabbnm",
-            label = "請輸入台股編號4或6碼",
-            choices = list(
-              上市=c(data_TSE_SC,data_TSE),
-              上櫃=c(data_OTC)),
-            selected="2603.TW 長榮 上市",
-            multiple = FALSE,
-            options = pickerOptions(`live-search` = TRUE),
-            choicesOpt = list(
-              style = rep(("color: black; background: white;"),5000))
-          ),
-          
-          dateRangeInput("date", label = h3("選擇時間"),separator="到",
-                         start  = "2021-12-15",
-                         end    = "2022-04-14",
-                         min    = "2000-08-15",#可改
-                         max    = Sys.Date()
-          ),
-          
-          helpText("請以正常時間順序輸入"),
-          helpText("例:2021-01-01 到 2021-12-31"),
-          
-          #k棒、bb、ma
-          #k棒、bb、ma
-          selectInput("base","基本訊息:",
-                      c("K棒圖" = "candle_p",
-                        "布林通道" = "bb_p",
-                        "移動平均線" = "ma_p"),
-                      selected = "K棒圖"
-          ),
-          
-          #是否要成交量
-          checkboxInput("volplot", label = "是否要顯示成交量",value =T),
-          
-          #指標輸入位置
-          h3("選擇指標"),
-          selectInput("index1","指標訊息:",
-                      c("BIAS乖離率"="BIAS","KDJ隨機指標"= "KDJ","RSI相對強弱指數"="RSI"
-                        ,"OBV能量潮指標" = "OBV","AR人氣指標&BR收盤指標" = "AR&BR"),
-                      selected = "BIAS"),
-          #radioButtons( 改成上面的selectinput 7個指標的點選按鈕所佔的空間太多
-          #  "index1",label = "",
-          #  choices = c("BIAS乖離率"="BIAS","KDJ隨機指標"= "KDJ","RSI相對強弱指數"="RSI"
-          #              ,"OBV能量潮指標" = "OBV","AR開價指標&BR收盤價強弱指" = "AR&BR"),
-          #  selected = "BIAS"
-          #)
-          
-          #
-          tabsetPanel(#根據不同條件變更ui
-            id = "params",
-            type = "hidden",
-            tabPanel("BIAS",#要與輸入的名字相同
-                     checkboxInput("whether_riskline1", label = "是否要顯示風險界線",value =T),
-                     conditionalPanel(condition = "input.whether_riskline1 == true",
-                                      numericInput("up_bias_risk",label="上界線",min=0,value=11),
-                                      numericInput("dn_bias_risk",label="下界線",min=0,value=11)
-                     ),
-                     checkboxInput("whether_image1", label = "是否要顯示教學圖",value = F)
-            ),
-            tabPanel("KDJ",
-                     checkboxInput("whether_riskline2", label = "是否要顯示風險界線",value =T),
-                     conditionalPanel(condition = "input.whether_riskline2 == true",
-                                      numericInput("up_kdj_risk", "上界線",min=0,value = 80),
-                                      numericInput("dn_kdj_risk", "下界線",min=0,value = 20)
-                     ),                     
-                     checkboxInput("whether_image2", label = "是否要顯示教學圖",value =F)
-            ),
-            tabPanel("RSI", 
-                     checkboxInput("whether_riskline3", label = "是否要顯示風險界線",value =T),
-                     conditionalPanel(condition = "input.whether_riskline3 == true",
-                                      numericInput("up_rsi_risk", "超買區界值",min=0,value = 70),
-                                      numericInput("dn_rsi_risk", "超賣區界值",min=0,value = 30)
-                     ),
-                     checkboxInput("whether_image3", label = "是否要顯示教學圖",value =F)
-            ),
-            tabPanel("OBV",
-                     checkboxInput("whether_riskline4", label = "是否要顯示風險界線",value =T),
-                     conditionalPanel(condition = "input.whether_riskline4 == true",
-                                      numericInput("obv_risk", "界線", value = 1, min = 0),
-                     ),
-                     checkboxInput("whether_image4", label = "是否要顯示教學圖",value =F)
-            ),
-            tabPanel("AR&BR",
-                     checkboxInput("whether_riskline5", label = "是否要顯示風險界線",value =T),
-                     conditionalPanel(condition = "input.whether_riskline5 == true",
-                                      numericInput("arbr_risk", label="界線", value = 1, min = -3),
-                     ),                     
-                     checkboxInput("whether_image5", label = "是否要顯示教學圖",value =F)
-            )),
-        ),
-        mainPanel(
-          tabsetPanel(
-            tabPanel("股票趨勢圖",
-                     br(),
-                     dropdownButton(
-                       label = "圖片設定",
-                       ##可加ui
-                       radioButtons("diff_dates_interval",label = "",
-                                    choices = c("年"="years","月"="months","日"="days"),
-                                    selected = "months"),
-                       tabsetPanel(
-                         id = "chose_dates_interval",
-                         type = "hidden",
-                         tabPanel("years",#要與輸入的名字相同
-                                  sliderInput("slide_year","以幾年為間隔",min=1,max=10,value=1)
-                         ),
-                         tabPanel("months",
-                                  sliderInput("slide_month","以幾個月為間隔",min=1,max=12,value=1)
-                         ),
-                         tabPanel("days",
-                                  sliderInput("slide_day","以幾日為間隔",min=1,max=366,value=7)
-                         )
-                       ),
-                       right = T,icon = icon("sliders"),
-                       status = "primary",circle = FALSE
-                     ),
-                     box(
-                       title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader(plotOutput("smplot"), type="html", loader="pacman")
-                     ),
-                     #價量輸出位置
-                     box(
-                       title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader(uiOutput("vol_position"), type="html", loader="pacman")
-                     ),
-                     #指標輸出位置
-                     box(
-                       title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader(plotOutput("indexplot"), type="html", loader="pacman")
-                     ),
-                     br(),
-                     #教學圖
-                     conditionalPanel(condition = "input.whether_image1 == true",
-                                      wellPanel(img(src="bias.png", height=430,width=760),style = "background: white")),
-                     conditionalPanel(condition = "input.whether_image2 == true",
-                                      wellPanel(img(src="kdj.png", height=430,width=760),style = "background: white")),
-                     conditionalPanel(condition = "input.whether_image3 == true",
-                                      wellPanel(img(src="rsi.png", height=430,width=760),style = "background: white")),
-                     conditionalPanel(condition = "input.whether_image4 == true",
-                                      wellPanel(img(src="obv.png", height=430,width=760),style = "background: white")),
-                     conditionalPanel(condition = "input.whether_image5 == true",
-                                      wellPanel(img(src="ar.png", height=430,width=760),style = "background: white"),
-                                      br(),
-                                      wellPanel(img(src="br.png", height=430,width=760),style = "background: white")),
+        sidebarPanel(width = 3,
                      
-                     #plotOutput(
-                     #outputId,
-                     #width = "100%",
-                     #height = "400px",
-                     #click = NULL,
-                     #dblclick = NULL,
-                     #hover = NULL,
-                     #brush = NULL,
-                     #inline = FALSE)
-            ),
-            tabPanel("台/美股票大盤",
-                     #選擇大盤指標
-                     tags$h5(""),
-                     "台股大盤產業中以半導體占比最多，進而延伸至美股中屬於半導體產業指數，就是費城半導體指數(SOX)，因此兩個的走勢相近。詳細資訊可參考", 
-                     style = "color:white;",
-                     tags$a(href="https://www.herishare.com/taiex-trend-relationship/", 
-                            "以下網址"),
-                     br(),                     
-                     br(),
-                     selectInput("index2","選擇台股大盤指標:",
-                                 c("移動平均線"= "TWII_MA","布林通道"="TWII_BB"),
-                                 selected = "移動平均線"
+                     #helpText("請輸入台股編號4或6碼"),
+                     #拉頁找代碼
+                     #selectInput(
+                     #"canpabbnm",
+                     #label = "",
+                     #choices =list("台股編號"=list[,1]),
+                     #selected = "2603.TW"
+                     #),
+                     h3("選擇股票"),
+                     pickerInput(
+                       inputId = "canpabbnm",
+                       label = "請輸入台股編號4或6碼",
+                       choices = list(
+                         上市=c(data_TSE_SC,data_TSE),
+                          上櫃=c(data_OTC)),
+                       selected="2603.TW 長榮 上市",
+                       multiple = FALSE,
+                       options = pickerOptions(`live-search` = TRUE),
+                       choicesOpt = list(
+                         style = rep(("color: black; background: white;"),5000))
                      ),
-                     selectInput("index3","選擇美股大盤指標:",
-                                 c("移動平均線"= "SOX_MA","布林通道"="SOX_BB"),
-                                 selected = "移動平均線"
+                     
+                     dateRangeInput("date", label = h3("選擇時間"),separator="到",
+                                    start  = "2021-12-15",
+                                    end    = "2022-04-14",
+                                    min    = "2000-08-15",#可改
+                                    max    = Sys.Date()
                      ),
-                     box(
-                       title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader(plotOutput("TWIIplot"), type="html", loader="pacman")
+                     
+                     helpText("請以正常時間順序輸入"),
+                     helpText("例:2021-01-01 到 2021-12-31"),
+                     
+                     #k棒、bb、ma
+                     #k棒、bb、ma
+                     selectInput("base","基本訊息:",
+                                 c("K棒圖" = "candle_p",
+                                   "布林通道" = "bb_p",
+                                   "移動平均線" = "ma_p"),
+                                 selected = "K棒圖"
                      ),
-                     box(
-                       title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader(plotOutput("SOXplot"), type="html", loader="pacman")
-                     )
-            ),
-            tabPanel("個股股價行情表",
-                     style = "background-color: #ffffff;",
-                     br(),
-                     box(
-                       title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader( DT::dataTableOutput("smtable"), type="html", loader="pacman")
-                     )
-            ),
-            
-            tabPanel("彙整表",
-                     br(),
-                     box(
-                       title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader( verbatimTextOutput("smsumy"), type="html", loader="pacman")
-                     ),
-                     box(
-                       title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                       withLoader( plotOutput("box_p"), type="html", loader="pacman")
-                     )
-            )
-          )
+                     
+                     #是否要成交量
+                     checkboxInput("volplot", label = "是否要顯示成交量",value =T),
+                     
+                     #指標輸入位置
+                     h3("選擇指標"),
+                     selectInput("index1","指標訊息:",
+                                 c("BIAS乖離率"="BIAS","KDJ隨機指標"= "KDJ","RSI相對強弱指數"="RSI"
+                                   ,"OBV能量潮指標" = "OBV","AR人氣指標&BR收盤指標" = "AR&BR"),
+                                 selected = "BIAS"),
+                     #radioButtons( 改成上面的selectinput 7個指標的點選按鈕所佔的空間太多
+                     #  "index1",label = "",
+                     #  choices = c("BIAS乖離率"="BIAS","KDJ隨機指標"= "KDJ","RSI相對強弱指數"="RSI"
+                     #              ,"OBV能量潮指標" = "OBV","AR開價指標&BR收盤價強弱指" = "AR&BR"),
+                     #  selected = "BIAS"
+                     #)
+                     
+                     #
+                     tabsetPanel(#根據不同條件變更ui
+                       id = "params",
+                       type = "hidden",
+                       tabPanel("BIAS",#要與輸入的名字相同
+                                checkboxInput("whether_riskline1", label = "是否要顯示風險界線",value =T),
+                                conditionalPanel(condition = "input.whether_riskline1 == true",
+                                                 numericInput("up_bias_risk",label="上界線",min=0,value=11),
+                                                 numericInput("dn_bias_risk",label="下界線",min=0,value=11)
+                                ),
+                                checkboxInput("whether_image1", label = "是否要顯示教學圖",value = F)
+                       ),
+                       tabPanel("KDJ",
+                                checkboxInput("whether_riskline2", label = "是否要顯示風險界線",value =T),
+                                conditionalPanel(condition = "input.whether_riskline2 == true",
+                                                 numericInput("up_kdj_risk", "上界線",min=0,value = 80),
+                                                 numericInput("dn_kdj_risk", "下界線",min=0,value = 20)
+                                ),                     
+                                checkboxInput("whether_image2", label = "是否要顯示教學圖",value =F)
+                       ),
+                       tabPanel("RSI", 
+                                checkboxInput("whether_riskline3", label = "是否要顯示風險界線",value =T),
+                                conditionalPanel(condition = "input.whether_riskline3 == true",
+                                                 numericInput("up_rsi_risk", "超買區界值",min=0,value = 70),
+                                                 numericInput("dn_rsi_risk", "超賣區界值",min=0,value = 30)
+                                ),
+                                checkboxInput("whether_image3", label = "是否要顯示教學圖",value =F)
+                       ),
+                       tabPanel("OBV",
+                                checkboxInput("whether_riskline4", label = "是否要顯示風險界線",value =T),
+                                conditionalPanel(condition = "input.whether_riskline4 == true",
+                                                 numericInput("obv_risk", "界線", value = 1, min = 0),
+                                ),
+                                checkboxInput("whether_image4", label = "是否要顯示教學圖",value =F)
+                       ),
+                       tabPanel("AR&BR",
+                                checkboxInput("whether_riskline5", label = "是否要顯示風險界線",value =T),
+                                conditionalPanel(condition = "input.whether_riskline5 == true",
+                                                 numericInput("arbr_risk", label="界線", value = 1, min = -3),
+                                ),                     
+                                checkboxInput("whether_image5", label = "是否要顯示教學圖",value =F)
+                       )),
+        ),
+        mainPanel(width = 9,
+                  tabsetPanel(
+                    tabPanel("股票趨勢圖",
+                             br(),
+                             dropdownButton(
+                               label = "圖片設定",
+                               ##可加ui
+                               radioButtons("diff_dates_interval",label = "",
+                                            choices = c("年"="years","月"="months","日"="days"),
+                                            selected = "months"),
+                               tabsetPanel(
+                                 id = "chose_dates_interval",
+                                 type = "hidden",
+                                 tabPanel("years",#要與輸入的名字相同
+                                          sliderInput("slide_year","以幾年為間隔",min=1,max=10,value=1)
+                                 ),
+                                 tabPanel("months",
+                                          sliderInput("slide_month","以幾個月為間隔",min=1,max=12,value=1)
+                                 ),
+                                 tabPanel("days",
+                                          sliderInput("slide_day","以幾日為間隔",min=1,max=366,value=7)
+                                 )
+                               ),
+                               right = T,icon = icon("sliders-h"),
+                               status = "primary",circle = FALSE
+                             ),
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader(plotOutput("smplot"), type="html", loader="pacman")
+                             ),
+                             #價量輸出位置
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader(uiOutput("vol_position"), type="html", loader="pacman")
+                             ),
+                             #指標輸出位置
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader(plotOutput("indexplot"), type="html", loader="pacman")
+                             ),
+                             br(),
+                             #教學圖
+                             conditionalPanel(condition = "input.whether_image1 == true",
+                                              wellPanel(img(src="bias.png", height=430,width=760),style = "background: white")),
+                             conditionalPanel(condition = "input.whether_image2 == true",
+                                              wellPanel(img(src="kdj.png", height=430,width=760),style = "background: white")),
+                             conditionalPanel(condition = "input.whether_image3 == true",
+                                              wellPanel(img(src="rsi.png", height=430,width=760),style = "background: white")),
+                             conditionalPanel(condition = "input.whether_image4 == true",
+                                              wellPanel(img(src="obv.png", height=430,width=760),style = "background: white")),
+                             conditionalPanel(condition = "input.whether_image5 == true",
+                                              wellPanel(img(src="ar.png", height=430,width=760),style = "background: white"),
+                                              br(),
+                                              wellPanel(img(src="br.png", height=430,width=760),style = "background: white")),
+                             
+                             #plotOutput(
+                             #outputId,
+                             #width = "100%",
+                             #height = "400px",
+                             #click = NULL,
+                             #dblclick = NULL,
+                             #hover = NULL,
+                             #brush = NULL,
+                             #inline = FALSE)
+                    ),
+                    tabPanel("台/美股票大盤",
+                             #選擇大盤指標
+                             tags$h5(""),
+                             "台股大盤產業中以半導體占比最多，進而延伸至美股中屬於半導體產業指數，就是費城半導體指數(SOX)，因此兩個的走勢相近。詳細資訊可參考", 
+                             style = "color:white;",
+                             tags$a(href="https://www.herishare.com/taiex-trend-relationship/", 
+                                    "以下網址"),
+                             br(),                     
+                             br(),
+                             selectInput("index2","選擇台股大盤指標:",
+                                         c("移動平均線"= "TWII_MA","布林通道"="TWII_BB"),
+                                         selected = "移動平均線"
+                             ),
+                             selectInput("index3","選擇美股大盤指標:",
+                                         c("移動平均線"= "SOX_MA","布林通道"="SOX_BB"),
+                                         selected = "移動平均線"
+                             ),
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader(plotOutput("TWIIplot"), type="html", loader="pacman")
+                             ),
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader(plotOutput("SOXplot"), type="html", loader="pacman")
+                             )
+                    ),
+                    tabPanel("個股股價行情表",
+                             style = "background-color: #ffffff;",
+                             br(),
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader( DT::dataTableOutput("smtable"), type="html", loader="pacman")
+                             )
+                    ),
+                    
+                    tabPanel("彙整表",
+                             br(),
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader( verbatimTextOutput("smsumy"), type="html", loader="pacman")
+                             ),
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader( plotOutput("box_p"), type="html", loader="pacman")
+                             )
+                    )
+                  )
         )
       )
     ),
@@ -1631,25 +1632,25 @@ ui <- fluidPage(
     tabPanel(
       "基本面(簡易財務報表)",icon = icon("balance-scale"),value = "about",
       mainPanel(
-        tabsetPanel(
-          br(),
-          box(
-            title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-            withLoader(  plotOutput("Income_statement",height = "600px",width="620px"), type="html", loader="pacman")
-          ),
-          br(),
-          box(
-            title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-            withLoader(  plotOutput("Cash_flow_statement",height = "600px",width="620px"), type="html", loader="pacman")
-          ),
-          br(),
-          box(
-            title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-            withLoader(  plotOutput("Balance_sheet",height = "600px",width="620px"), type="html", loader="pacman")
-          ),
-          p(tags$li(tags$b(tags$a(href="https://statementdog.com/", "資料來源:財務報表", class="externallink")),
-                    ""))
-        )
+        fluidRow(
+          column(width = 6,
+                 box(
+                   title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                   withLoader(  plotOutput("Income_statement",height = "600px",width="600px"), type="html", loader="pacman")
+                 )),
+          column(width = 6,
+                 box(
+                   title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                   withLoader(  plotOutput("Cash_flow_statement",height = "600px",width="600px"), type="html", loader="pacman")
+                 ))),
+        br(),
+        box(
+          title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+          withLoader(  plotOutput("Balance_sheet",height = "600px",width="620px"), type="html", loader="pacman")
+        ),
+        br(),
+        p("資料來源:",tags$b(tags$a(href="https://statementdog.com/", "財務報表", class="externallink")),
+          "")
       )
     ),
     # 第三頁
@@ -1661,30 +1662,33 @@ ui <- fluidPage(
           title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
           withLoader(plotOutput("chip_surface",height = "820px",width="400px"), type="html", loader="pacman")
         ),
-        p(tags$li(tags$b(tags$a(href="https://histock.tw/%E5%8F%B0%E8%82%A1%E5%A4%A7%E7%9B%A4", "資料來源:籌碼面", class="externallink")),
-                  ""))
+        br(),
+        p("資料來源:",tags$b(tags$a(href="https://histock.tw/%E5%8F%B0%E8%82%A1%E5%A4%A7%E7%9B%A4", "籌碼面", class="externallink")),
+          "")
       )
     ),
     #第四頁
     tabPanel(
       "回測分析",icon = icon("trello"),
       mainPanel(
-        br(),
-        h5("回測(Backtesting)，基於歷史股價以測試並重塑策略的過程，用以檢驗策略的過往績效。進行回測時，可擬定多組策略，並自行觀察何種策略的執行效果最佳。",style = "color:white;"),
-        p("此網站所擬定的策略為，",span("當移動平均五日線大於移動平均十日線、移動平均十日線大於移動平均二十日線時，作買進。當移動平均五日線跌破移動平均二十日線時，作賣出。", style = "color:orange")),
-        h5("各位小韭菜們可以先行使用此網站所擬定的策略，研究此方法對哪支股票的報酬率最好。且可下載Excel檔，進一步了解進出場時間點及報酬率。", style = "color:white;"),
-        h5("上圖:累計收益、中圖:日收益、下圖:下跌圖", style = "color:white;"),
-        h5("(註:將下跌成分獨立繪出，有助於我們分析虧損狀況及研究彌補措施)", style = "color:white;"), 
-        br(),
-        box( 
-          title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-          withLoader(plotOutput("cumulative_return",height = "820px",width="500px"), type="html", loader="pacman")
-        ),
-        downloadButton("backtesting", "下載回測分析excel"),
-        br(),
-        br()
-      )
-    ),
+        fluidRow(
+          column(width = 12,  
+                 h4("回測分析介紹"), p("回測(Backtesting)，基於歷史股價以測試並重塑策略的過程，用以檢驗策略的過往績效。進行回測時，可擬定多組策略，並自行觀察何種策略的執行效果最佳。",style = "color:white;"),
+                 p("此網站所擬定的策略為，",span("當移動平均五日線大於移動平均十日線、移動平均十日線大於移動平均二十日線時，作買進。當移動平均五日線跌破移動平均二十日線時，作賣出。", style = "color:orange")),
+                 p("各位小韭菜們可以先行使用此網站所擬定的策略，研究此方法對哪支股票的報酬率最好。且可下載Excel檔，進一步了解進出場時間點及報酬率。",style = "color:white;"),
+                 p("上圖:累計收益、中圖:日收益、下圖:下跌圖。",style = "color:white;"),
+                 p("(註:將下跌成分獨立繪出，有助於我們分析虧損狀況及研究彌補措施)"),
+                 br(),
+                 box( 
+                   title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                   withLoader(plotOutput("cumulative_return",height = "820px",width="1200px"), type="html", loader="pacman")
+                 ),
+                 br(),
+                 downloadButton("backtesting", "下載回測分析excel"),
+                 br(),
+                 br()
+          ))
+      )),
     #第五頁
     navbarMenu(
       "常見問題", icon = icon("info-circle"),

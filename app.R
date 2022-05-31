@@ -1479,39 +1479,38 @@ ui <- fluidPage(
                                 conditionalPanel(condition = "input.whether_riskline1 == true",
                                                  numericInput("up_bias_risk",label="上界線",min=0,value=11),
                                                  numericInput("dn_bias_risk",label="下界線",min=0,value=11)
-                                ),
-                                checkboxInput("whether_image1", label = "是否要顯示教學圖",value = F)
+                                )
                        ),
                        tabPanel("KDJ",
                                 checkboxInput("whether_riskline2", label = "是否要顯示風險界線",value =T),
                                 conditionalPanel(condition = "input.whether_riskline2 == true",
                                                  numericInput("up_kdj_risk", "上界線",min=0,value = 80),
                                                  numericInput("dn_kdj_risk", "下界線",min=0,value = 20)
-                                ),                     
-                                checkboxInput("whether_image2", label = "是否要顯示教學圖",value =F)
-                       ),
+                                )
+                        ),
                        tabPanel("RSI", 
                                 checkboxInput("whether_riskline3", label = "是否要顯示風險界線",value =T),
                                 conditionalPanel(condition = "input.whether_riskline3 == true",
                                                  numericInput("up_rsi_risk", "超買區界值",min=0,value = 70),
                                                  numericInput("dn_rsi_risk", "超賣區界值",min=0,value = 30)
-                                ),
-                                checkboxInput("whether_image3", label = "是否要顯示教學圖",value =F)
+                                )
                        ),
                        tabPanel("OBV",
                                 checkboxInput("whether_riskline4", label = "是否要顯示風險界線",value =T),
                                 conditionalPanel(condition = "input.whether_riskline4 == true",
                                                  numericInput("obv_risk", "界線", value = 1, min = 0),
-                                ),
-                                checkboxInput("whether_image4", label = "是否要顯示教學圖",value =F)
+                                )
                        ),
                        tabPanel("AR&BR",
                                 checkboxInput("whether_riskline5", label = "是否要顯示風險界線",value =T),
                                 conditionalPanel(condition = "input.whether_riskline5 == true",
                                                  numericInput("arbr_risk", label="界線", value = 1, min = -3),
-                                ),                     
-                                checkboxInput("whether_image5", label = "是否要顯示教學圖",value =F)
-                       )),
+                                )                
+                       ),
+                       selectInput("teachingimages","選擇指標教學圖:",
+                                   c("BIAS乖離率"="BIAS_image","KDJ隨機指標"= "KDJ_image","RSI相對強弱指數"="RSI_image"
+                                     ,"OBV能量潮指標" = "OBV_image","AR人氣指標&BR收盤指標" = "AR&BR_image"),
+                                   selected = NULL)                       )
         ),
         mainPanel(width = 9,
                   tabsetPanel(
@@ -1555,19 +1554,10 @@ ui <- fluidPage(
                              ),
                              br(),
                              #教學圖
-                             conditionalPanel(condition = "input.whether_image1 == true",
-                                              wellPanel(img(src="bias.png", height=430,width=760),style = "background: white")),
-                             conditionalPanel(condition = "input.whether_image2 == true",
-                                              wellPanel(img(src="kdj.png", height=430,width=760),style = "background: white")),
-                             conditionalPanel(condition = "input.whether_image3 == true",
-                                              wellPanel(img(src="rsi.png", height=430,width=760),style = "background: white")),
-                             conditionalPanel(condition = "input.whether_image4 == true",
-                                              wellPanel(img(src="obv.png", height=430,width=760),style = "background: white")),
-                             conditionalPanel(condition = "input.whether_image5 == true",
-                                              wellPanel(img(src="ar.png", height=430,width=760),style = "background: white"),
-                                              br(),
-                                              wellPanel(img(src="br.png", height=430,width=760),style = "background: white")),
-                             
+                             box(
+                               title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+                               withLoader(imageOutput("images"), type="html", loader="pacman")),
+                         
                              #plotOutput(
                              #outputId,
                              #width = "100%",
@@ -1956,8 +1946,6 @@ server = function(input,output,session) {
   
   ##匯出指標圖
   output$indexplot = renderPlot({
-    #validate dateorder、abbr
-    react_valid_dateorder_abbr()
     react_index_plot()
   })
   
@@ -2124,8 +2112,29 @@ server = function(input,output,session) {
     }
   )
   
-} 
-
+  ##教學圖
+ 
+  ##匯出指標圖
+  output$images <- renderImage({   #This is where the image is set 
+    if(input$teachingimages == "BIAS_image"){            
+      img(src = "Bowie.png", height = 240, width = 300)
+    }                                        
+    else if(input$teachingimages == "KDJ_image"){
+      img(src="bias.png", height=430,width=760)
+    }
+    else if(input$teachingimages == "RSI_image"){
+      img(src="rsi.png", height=430,width=760)
+    }
+    else if(input$teachingimages == "OBV_image"){
+      img(src="obv.png", height=430,width=760)
+    }
+    else if(input$teachingimages == "AR&BR_image"){
+      img(src="ar.png", height=430,width=760)
+      img(src="br.png", height=430,width=760)
+    }
+  })
+  
+}
 
 ###執行
 shinyApp(ui=ui,server=server)

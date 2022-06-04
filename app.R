@@ -465,7 +465,7 @@ Kdj_p<-function(data,whether_riskline2,risk_line1,risk_line2,date_interval_set){
     geom_line(aes(y=K,col="K線"),na.rm=T)+
     geom_line(aes(y=D,col="D線"),na.rm=T)+
     geom_line(aes(y=J,col="J線"),na.rm=T)+
-    labs( title = "KDJ 隨機指標",y = 'KDJ',x='日期',color="")+
+    labs( title = "KDJ 隨機指標",y = 'KDJ',x='日期')+
     scale_x_date(date_breaks = date_interval_set, date_labels=c("%m/%d"))+
     theme(axis.text.y = element_text(margin = margin(r = -18)))+
     scale_color_manual(values = c("K線"="orange","D線"="blue","J線"="#D28EFF"))+
@@ -1058,16 +1058,18 @@ TWII_MA_p<-function(stock_data_TWII_fun){
     geom_point(aes(y = equal_pt), shape = "-", size = 4, color = "black",na.rm=T)+
     
     scale_fill_manual(values = c("fall"="#00bb00","rise"="#ce0000"))+
-    labs(x="",y="價錢"
+    labs(x="",y="價錢",color=""
          ,title=paste0("台股大盤",snum," ","[",sdata_date[1],"/",sdata_date[length(sdata_date)],"]"),fill=NULL)+
     scale_x_date(position="top",date_breaks = "1 month", date_labels=c("%m/%d"))+
     theme(axis.text.y = element_text(margin = margin(r = -21)),legend.position = "none")+        
-    geom_line(aes(y = MA_5),
-              color = "blue", size = 0.5)+
-    geom_line(aes(y = MA_20),
-              color = "orange",  size = 0.5)+
-    geom_line(aes(y = MA_60),
-              color = "purple",  size = 0.5)
+    #MA
+    
+    geom_line(aes(y=MA_5,col="五日均線"),na.rm=T)+
+    geom_line(aes(y=MA_20,col="二十日均線"),na.rm=T)+
+    geom_line(aes(y=MA_60,col="六十日均線"),na.rm=T)+
+    scale_color_manual(values = c("五日均線"="blue","二十日均線"="orange","六十日均線"="purple"))+
+    theme(legend.position = c(0.97,0.96))+
+    guides(fill=F)
   print(candle_p)
 }
 
@@ -1237,16 +1239,16 @@ SOX_MA_p<-function(stock_data_SOX_fun){
     geom_point(aes(y = equal_pt), shape = "-", size = 4, color = "black",na.rm=T)+
     
     scale_fill_manual(values = c("fall"="#00bb00","rise"="#ce0000"))+
-    labs(x="",y="價錢"
+    labs(x="",y="價錢",color=""
          ,title=paste0("美股大盤",snum," ","[",sdata_date[1],"/",sdata_date[length(sdata_date)],"]"),fill=NULL)+
     scale_x_date(position="top",date_breaks = "1 month", date_labels=c("%m/%d"))+
     theme(axis.text.y = element_text(margin = margin(r = -21)),legend.position = "none")+        
-    geom_line(aes(y = MA_5),
-              color = "blue", size = 0.5)+
-    geom_line(aes(y = MA_20),
-              color = "orange",  size = 0.5)+
-    geom_line(aes(y = MA_60),
-              color = "purple",  size = 0.5)
+    geom_line(aes(y=MA_5,col="五日均線"),na.rm=T)+
+    geom_line(aes(y=MA_20,col="二十日均線"),na.rm=T)+
+    geom_line(aes(y=MA_60,col="六十日均線"),na.rm=T)+
+    scale_color_manual(values = c("五日均線"="blue","二十日均線"="orange","六十日均線"="purple"))+
+    theme(legend.position = c(0.97,0.96))+
+    guides(fill=F)
   print(candle_p)
 }
 
@@ -1389,7 +1391,7 @@ if (.Platform$OS.type == "windows") {
 ################################################################################
 
 ###ui
-ui <- fluidPage(  
+ui <- fluidPage(
   tags$head(
     tags$style(HTML("
       .shiny-output-error-validation {
@@ -1487,7 +1489,7 @@ ui <- fluidPage(
                                                  numericInput("up_kdj_risk", "上界線",min=0,value = 80),
                                                  numericInput("dn_kdj_risk", "下界線",min=0,value = 20)
                                 )
-                        ),
+                       ),
                        tabPanel("RSI", 
                                 checkboxInput("whether_riskline3", label = "是否要顯示風險界線",value =T),
                                 conditionalPanel(condition = "input.whether_riskline3 == true",
@@ -1509,7 +1511,7 @@ ui <- fluidPage(
                        ),
                        selectInput("teachingimages","選擇指標教學圖:",
                                    c("BIAS乖離率"="BIAS_image","KDJ隨機指標"= "KDJ_image","RSI相對強弱指數"="RSI_image"
-                                     ,"OBV能量潮指標" = "OBV_image","AR人氣指標&BR收盤指標" = "AR&BR_image"),
+                                     ,"OBV能量潮指標" = "OBV_image","AR人氣指標" = "AR_image","BR收盤指標" = "BR_image"),
                                    selected = NULL)                       )
         ),
         mainPanel(width = 9,
@@ -1557,7 +1559,7 @@ ui <- fluidPage(
                              box(
                                title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
                                withLoader(imageOutput("images"), type="html", loader="pacman")),
-                         
+                             
                              #plotOutput(
                              #outputId,
                              #width = "100%",
@@ -1622,21 +1624,21 @@ ui <- fluidPage(
     tabPanel(
       "基本面(簡易財務報表)",icon = icon("balance-scale"),value = "about",
       mainPanel(
-        fluidRow(
-          column(width = 6,
-                 box(
-                   title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                   withLoader(  plotOutput("Income_statement",height = "600px",width="600px"), type="html", loader="pacman")
-                 )),
-          column(width = 6,
-                 box(
-                   title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-                   withLoader(  plotOutput("Cash_flow_statement",height = "600px",width="600px"), type="html", loader="pacman")
-                 ))),
-        br(),
-        box(
-          title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-          withLoader(  plotOutput("Balance_sheet",height = "600px",width="620px"), type="html", loader="pacman")
+        verticalLayout( 
+          box(
+            title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+            withLoader(plotOutput("Income_statement",height = "600px",width="700px"), type="html", loader="pacman")
+          ),
+          
+          box(
+            title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+            withLoader(plotOutput("Cash_flow_statement",height = "600px",width="700px"), type="html", loader="pacman")
+          ),
+          
+          box(
+            title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
+            withLoader(plotOutput("Balance_sheet",height = "600px",width="700px"), type="html", loader="pacman")
+          )
         ),
         br(),
         p("資料來源:",tags$b(tags$a(href="https://statementdog.com/", "財務報表", class="externallink")),
@@ -1650,7 +1652,7 @@ ui <- fluidPage(
         br(),
         box(
           title = "", status = "primary", solidHeader = TRUE,width =NULL,height = NULL,
-          withLoader(plotOutput("chip_surface",height = "820px",width="400px"), type="html", loader="pacman")
+          withLoader(plotOutput("chip_surface",height = "820px",width="500px"), type="html", loader="pacman")
         ),
         br(),
         p("資料來源:",tags$b(tags$a(href="https://histock.tw/%E5%8F%B0%E8%82%A1%E5%A4%A7%E7%9B%A4", "籌碼面", class="externallink")),
@@ -1692,10 +1694,10 @@ ui <- fluidPage(
                                    p(tags$li(tags$b(tags$a(href="https://zh.wikipedia.org/wiki/%E4%B9%96%E9%9B%A2%E7%8E%87", "乖離率 (Bias Ratio)", class="externallink")),
                                              ":代表當日股票收盤價或盤中市價與移動平均線的差距，以分析股價偏離某時期平均價(平均成本)的程度。")),
                                    
-                                   p(tags$li(tags$b(tags$a(href="https://wiki.mbalib.com/zh-tw/BRAR%E6%8C%87%E6%A0%87", "開價指標 (Popularity Index,AR)", class="externallink")),
+                                   p(tags$li(tags$b(tags$a(href="https://wiki.mbalib.com/zh-tw/BRAR%E6%8C%87%E6%A0%87", "人氣指標 (Popularity Index,AR)", class="externallink")),
                                              ":以當天開盤價為基礎，分別比較當天最高價、最低價，透過一定期間內開盤價在股價中的強弱比率，反映市場買賣人氣。")),
                                    
-                                   p(tags$li(tags$b(tags$a(href="https://wiki.mbalib.com/zh-tw/BRAR%E6%8C%87%E6%A0%87", "收盤價強弱指標 (Willingness Index,BR)", class="externallink")),
+                                   p(tags$li(tags$b(tags$a(href="https://wiki.mbalib.com/zh-tw/BRAR%E6%8C%87%E6%A0%87", "收盤指標 (Willingness Index,BR)", class="externallink")),
                                              ":是反映當前情況下多空雙方力量爭鬥的結果。不同的是它是以前一日的收盤價為基礎，與當日的最高價、最低價相比較，依固定公式計算出來的強弱指標。")),
                                    
                                    p(tags$li(tags$b(tags$a(href="https://zh.wikipedia.org/wiki/%E7%A7%BB%E5%8B%95%E5%B9%B3%E5%9D%87", "移動平均線 (Moving Average,MA)", class="externallink")),
@@ -1704,7 +1706,7 @@ ui <- fluidPage(
                                    p(tags$li(tags$b(tags$a(href="https://zh.wikipedia.org/wiki/KD%E6%8C%87%E6%A8%99", "隨機指標 (Stochasticsoscillator , KDJ)", class="externallink")),
                                              ":是技術分析中的一種動量分析方法，採用超買和超賣的概念，由喬治·萊恩(George C. Lane)在1950年代推廣使用。指標藉由比較收盤價格和價格的波動範圍，預測價格趨勢何時逆轉。")),
                                    
-                                   p(tags$li(tags$b(tags$a(href="https://www.cmoney.tw/learn/course/cmoney/topic/139", "逆勢指標 (Relative Strength Index,RSI)", class="externallink")),
+                                   p(tags$li(tags$b(tags$a(href="https://www.cmoney.tw/learn/course/cmoney/topic/139", "相對強弱指數 (Relative Strength Index,RSI)", class="externallink")),
                                              ":是一個藉由比較價格升降多寡，計算出價格強度的指標。RSI 指數的應用，是根據「漲久必跌，跌久必漲」的原則，去按段高低價並做買賣。")),
                                    p(tags$li(tags$b(tags$a(href="https://www.moneydj.com/kmdj/wiki/wikiviewer.aspx?keyid=1caf93e4-a640-422a-8db1-d20574d9f163", "能量潮指標(On Balance Volume,OBV)", class="externallink")),
                                              ":也有人稱之為人氣指標，是一種依據行情的漲跌，來累計或刪去市場的成交量值，而以此累算值作為市場行情動能變化趨勢的指標。"))
@@ -1727,14 +1729,14 @@ ui <- fluidPage(
                tags$li("正乖離：收盤價 > 移動平均價 →股價高於均價，股價下跌修正的可能性變高。"),
                tags$li("負乖離：收盤價 < 移動平均價→股價低於均價，股價上漲修正的可能性變高。"),
                br(),
-               p("開價指標(Popularity Index , AR):",style ="color:Orange"),
+               p("人氣指標(Popularity Index , AR):",style ="color:Orange"),
                tags$li("AR=1 : 強弱買賣平衡狀態。"),
                tags$li("AR>1 : 走高能量>走低能量→股價強勢期。"),
                tags$li("AR<1 : 走高能量>走低能量→股價弱勢期。"),
                tags$li("AR過高 : 股價可能進入高檔，賣出訊號。"),
                tags$li("AR過低 : 股價可能跌入谷底，買入訊號。"),
                br(),
-               p("收盤價強弱指標 (Willingness Index , BR):",style ="color:Orange"),
+               p("收盤指標 (Willingness Index , BR):",style ="color:Orange"),
                tags$li("BR=1 : 買賣意願平衡。"),
                tags$li("BR>1 : 股價行情不會在長期持續上漲 (已步入高價圈)。"),
                tags$li("BR<1 : 股價行情不會在長期持續下跌 (已步入低價圈)。"),
@@ -1751,7 +1753,7 @@ ui <- fluidPage(
                tags$li("J值大於100時，股價會形成頭部而出現回落，賣出訊號。"),
                tags$li("J值小於0時，股價會形成底部而產生反彈，買進訊號。"),
                br(),
-               p("逆勢指標(Relative Strength Index , RSI):",style ="color:Orange"),
+               p("相對強弱指數(Relative Strength Index , RSI):",style ="color:Orange"),
                tags$li("RSI升至70時，代表該證券已被超買，股票未來可能會下跌。"),
                tags$li("RSI升至30時，代表該證券已被超賣，股票未來可能會上漲。"),
                tags$li("黃金交叉: 當短期RSI線向上穿過長期的RSI線時，價格上漲，買入信號。"),
@@ -2113,25 +2115,28 @@ server = function(input,output,session) {
   )
   
   ##教學圖
- 
+  
   ##匯出指標圖
   output$images <- renderImage({   #This is where the image is set 
     if(input$teachingimages == "BIAS_image"){            
-      img(src = "Bowie.png", height = 240, width = 300)
+      list(src = file.path('www', "bias.png"), height=430,width=760,deleteFile = FALSE)
     }                                        
     else if(input$teachingimages == "KDJ_image"){
-      img(src="bias.png", height=430,width=760)
+      list(src=file.path('www', "kdj.png"), height=430,width=760,deleteFile = FALSE)
     }
     else if(input$teachingimages == "RSI_image"){
-      img(src="rsi.png", height=430,width=760)
+      list(src=file.path('www', "rsi.png"), height=430,width=760,deleteFile = FALSE)
     }
     else if(input$teachingimages == "OBV_image"){
-      img(src="obv.png", height=430,width=760)
+      list(src=file.path('www', "obv.png"), height=430,width=760,deleteFile = FALSE)
     }
-    else if(input$teachingimages == "AR&BR_image"){
-      img(src="ar.png", height=430,width=760)
-      img(src="br.png", height=430,width=760)
+    else if(input$teachingimages == "AR_image"){
+      list(src=file.path('www', "ar.png"), height=430,width=760,deleteFile = FALSE)
     }
+    else if(input$teachingimages == "BR_image"){
+      list(src=file.path('www', "br.png"), height=430,width=760,deleteFile = FALSE)
+    }
+    
   })
   
 }
